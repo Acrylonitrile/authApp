@@ -5,14 +5,15 @@ import { Request, Response } from "express"
 const authRouter = Router()
 const authController = new AuthController()
 
-authRouter.post("/signup", authController.post)
+authRouter.post("/signup", authController.validateSignUp, authController.post)
 authRouter.get("/login", authController.get)
 authRouter.get(
   "/pages",
   authController.authenticateToken,
   (req: Request, res: Response) => {
-    res.send(`user is ${req.params.user}`)
+    res.send(req.params.user)
   }
 )
+authRouter.get("/refresh", authController.refresh)
 
 export default authRouter

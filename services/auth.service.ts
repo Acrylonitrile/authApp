@@ -19,7 +19,12 @@ class AuthService {
   login = async (
     userId: string,
     password: string
-  ): Promise<{ isSuccess: boolean; error?: string; accesstoken?: string }> => {
+  ): Promise<{
+    isSuccess: boolean
+    error?: string
+    accessToken?: string
+    refreshToken?: string
+  }> => {
     const [userDetails] = await authTable.findAll({
       where: {
         userId: userId
@@ -30,8 +35,18 @@ class AuthService {
     const hash = userDetails.dataValues.password
     const isMatch = await bcrypt.compare(password, hash)
     if (!isMatch) return { isSuccess: false, error: "Invalid password" }
-    const token = jwt.sign(userId, process.env.ACCESS_TOKEN_SECRET as string)
-    return { isSuccess: true, accesstoken: token }
+    const accessToken = jwt.sign(
+      { userId },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "15s"
+      }
+    )
+    const refreshToken = jwt.sign(
+      { userId },
+      process.env.REFRESH_TOKEN_SECRET as string
+    )
+    return { isSuccess: true, accessToken, refreshToken }
   }
 }
 
