@@ -3,6 +3,7 @@ dotenv.config()
 import authTable from "../models/auth.table"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import nodeMailer from "nodemailer"
 
 class AuthService {
   signUp = async (userId: string, password: string) => {
@@ -39,7 +40,7 @@ class AuthService {
       { userId },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
-        expiresIn: "15s"
+        expiresIn: "2 days"
       }
     )
     const refreshToken = jwt.sign(
@@ -47,6 +48,14 @@ class AuthService {
       process.env.REFRESH_TOKEN_SECRET as string
     )
     return { isSuccess: true, accessToken, refreshToken }
+  }
+  findEmail = async (userId: string) => {
+    const [userDetails] = await authTable.findAll({
+      where: {
+        userId: userId
+      }
+    })
+    return userDetails
   }
 }
 
