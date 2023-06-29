@@ -57,6 +57,21 @@ class AuthService {
     })
     return userDetails
   }
+  resetPassword = async (userId: string, password: string) => {
+    const newHash = await bcrypt.hash(
+      password,
+      parseInt(process.env.SALT as string)
+    )
+    const result = await authTable.update(
+      { password: newHash },
+      {
+        where: {
+          userId: userId
+        }
+      }
+    )
+    return result
+  }
 }
 
 export default AuthService

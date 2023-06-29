@@ -13,7 +13,7 @@ const sendEmail = async (email: string, token: string) => {
   })
 
   const info = await transporter.sendMail({
-    from: `Trisha Haag <${process.env.HOST_EMAIL as string}>`,
+    from: `<${process.env.HOST_EMAIL as string}>`,
     to: email,
     subject: "testingnew",
     html: `

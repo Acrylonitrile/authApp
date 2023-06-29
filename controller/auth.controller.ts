@@ -11,11 +11,6 @@ declare module "jsonwebtoken" {
   }
 }
 
-const signUpSchema = Joi.object({
-  userId: Joi.string().email().required(),
-  password: Joi.string().min(5).required()
-})
-
 const authService = new AuthService()
 
 class AuthController {
@@ -40,33 +35,10 @@ class AuthController {
     console.log(req.cookies)
     res.status(201).send(result)
   }
-  authenticateToken =
-    (secret: string) => (req: Request, res: Response, next: NextFunction) => {
-      const authHeader = req.headers.authorization
-      const token = authHeader && authHeader.split(" ")[1]
-      console.log(token)
-      //console.log(req.cookies)
-      // const token = req.cookies["authorization"] as string
-      if (!token) return res.status(401).send("no token")
-      jwt.verify(token, secret, (err, user) => {
-        if (err) return res.status(403).send("invalid token")
-        req.params.user = user as string
-        next()
-      })
-    }
-  validateSignUp = (req: Request, res: Response, next: NextFunction) => {
-    const { error, value } = signUpSchema.validate(req.body, {
-      abortEarly: false
-    })
-    if (error) {
-      console.log(error)
-      return res.status(401).send(error.details)
-    }
-    next()
-  }
   refresh = (req: Request, res: Response) => {
     const refreshToken = req.cookies["refreshToken"] as string
     if (!refreshToken) return res.status(401).send("no token provided")
+
     jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET as string,
@@ -89,7 +61,6 @@ class AuthController {
     if (!userDetails) res.status(401).send("invalid user")
     console.log("valid user")
     next()
-    // res.status(201).send(userDetails)
   }
   sendResetLink = async (req: Request, res: Response) => {
     const token = jwt.sign(
@@ -106,6 +77,12 @@ class AuthController {
       console.log(error)
       res.status(401).send(error)
     }
+  }
+  resetPassword = async (req: Request, res: Response) => {
+    const userId = req.params.user
+    const password = req.body.password
+    const result = await authService.resetPassword(userId, password)
+    res.status(201).send(result)
   }
 }
 
